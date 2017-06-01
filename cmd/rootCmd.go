@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -32,6 +32,10 @@ var RootCmd = &cobra.Command{
 			return errors.New("must supply one argument, the proxy URL")
 		}
 
+		if len(domains) == 0 {
+			return errors.New("must supply atleast one domain")
+		}
+
 		proxyTarget, err := url.Parse(args[0])
 		if err != nil {
 			return err
@@ -45,7 +49,7 @@ var RootCmd = &cobra.Command{
 			HealthCheck: healthCheck,
 		})
 
-		fmt.Println("starting up...")
+		log.Println("starting up...")
 		if err := proxyServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 			return err
 		}

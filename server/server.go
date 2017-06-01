@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -35,9 +36,13 @@ func New(options Options) *http.Server {
 		})
 	}
 
+	log.Println("proxying to", options.ProxyTarget)
+
 	mux.Handle("/", httputil.NewSingleHostReverseProxy(options.ProxyTarget))
 
 	var server *http.Server
+
+	log.Println("using domains", options.Domains)
 
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
@@ -69,10 +74,10 @@ func handleSignals(server *http.Server) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
-		fmt.Print("shutting down... ")
+		log.Print("shutting down... ")
 		if err := server.Shutdown(ctx); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
-		fmt.Println("done")
+		log.Println("done")
 	}()
 }
