@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -36,6 +37,14 @@ var RootCmd = &cobra.Command{
 			return errors.New("must supply atleast one domain")
 		}
 
+		healthServer := &http.Server{
+			Addr: ":8500",
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				fmt.Fprint(w, "OK")
+			}),
+		}
+		go healthServer.ListenAndServe()
+
 		proxyTarget, err := url.Parse(args[0])
 		if err != nil {
 			return err
@@ -46,7 +55,6 @@ var RootCmd = &cobra.Command{
 			Port:        ":443",
 			CertCache:   "/var/certs",
 			ProxyTarget: proxyTarget,
-			HealthCheck: healthCheck,
 		})
 
 		log.Println("starting up...")

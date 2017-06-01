@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -22,19 +21,12 @@ type Options struct {
 	Port        string
 	CertCache   string
 	ProxyTarget *url.URL
-	HealthCheck string
 }
 
 // New returns a Let's Encrypt Proxy server using the given options
 func New(options Options) *http.Server {
 
 	mux := http.NewServeMux()
-
-	if options.HealthCheck != "" {
-		mux.HandleFunc(options.HealthCheck, func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, "OK")
-		})
-	}
 
 	log.Println("proxying to", options.ProxyTarget)
 
