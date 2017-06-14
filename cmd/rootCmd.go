@@ -45,6 +45,7 @@ var RootCmd = &cobra.Command{
 			}),
 		}
 		go func() {
+			log.Println("starting health server")
 			if err := healthServer.ListenAndServe(); err != nil {
 				log.Println("health server error:", err)
 			}
@@ -63,6 +64,7 @@ var RootCmd = &cobra.Command{
 			}),
 		}
 		go func() {
+			log.Println("starting redirect server")
 			if err := redirectServer.ListenAndServe(); err != nil {
 				log.Println("redirect server error:", err)
 			}
