@@ -44,12 +44,17 @@ var RootCmd = &cobra.Command{
 				fmt.Fprint(w, "OK")
 			}),
 		}
-		go healthServer.ListenAndServe()
+		go func() {
+			if err := healthServer.ListenAndServe(); err != nil {
+				log.Println("health server error:", err)
+			}
+		}()
 
 		// Redirect HTTP to HTTPS
 		redirectServer := &http.Server{
 			Addr: ":80",
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				log.Println("redirecting request", r.Host, r.URL.Path)
 				target := "https://" + r.Host + r.URL.Path
 				if len(r.URL.RawQuery) > 0 {
 					target += "?" + r.URL.RawQuery
@@ -57,7 +62,11 @@ var RootCmd = &cobra.Command{
 				http.Redirect(w, r, target, http.StatusMovedPermanently)
 			}),
 		}
-		go redirectServer.ListenAndServe()
+		go func() {
+			if err := redirectServer.ListenAndServe(); err != nil {
+				log.Println("redirect server error:", err)
+			}
+		}()
 
 		// Setup proxy server
 		proxyTarget, err := url.Parse(args[0])
