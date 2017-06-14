@@ -49,7 +49,7 @@ var RootCmd = &cobra.Command{
 		// Redirect HTTP to HTTPS
 		redirectServer := &http.Server{
 			Addr: ":80",
-			Handler: http.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				target := "https://" + r.Host + r.URL.Path
 				if len(r.URL.RawQuery) > 0 {
 					target += "?" + r.URL.RawQuery
