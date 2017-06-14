@@ -37,6 +37,7 @@ var RootCmd = &cobra.Command{
 			return errors.New("must supply atleast one domain")
 		}
 
+		// Provide an HTTP Health Check for LBs
 		healthServer := &http.Server{
 			Addr: ":8500",
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +46,20 @@ var RootCmd = &cobra.Command{
 		}
 		go healthServer.ListenAndServe()
 
+		// Redirect HTTP to HTTPS
+		redirectServer := &http.Server{
+			Addr: ":80",
+			Handler: http.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
+				target := "https://" + r.Host + r.URL.Path
+				if len(r.URL.RawQuery) > 0 {
+					target += "?" + r.URL.RawQuery
+				}
+				http.Redirect(w, r, target, http.StatusMovedPermanently)
+			}),
+		}
+		go redirectServer.ListenAndServe()
+
+		// Setup proxy server
 		proxyTarget, err := url.Parse(args[0])
 		if err != nil {
 			return err
